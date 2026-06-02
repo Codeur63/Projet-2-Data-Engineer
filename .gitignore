@@ -1,0 +1,10 @@
+.pytest/
+__pycache__/
+.env
+data/
+raw/
+*.pyc
+.DS_Store
+*.db
+.ideo
+.vs_code/
