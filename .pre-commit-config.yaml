@@ -1,0 +1,21 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml          # Vérifie que tes fichiers .yaml sont bien écrits
+      - id: check-added-large-files # Empêche d'ajouter des fichiers trop gros par erreur
+
+  # 2. RUFF : Le remplaçant moderne de Flake8/Isort (Ultra rapide, corrige les erreurs de style)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: [ --fix ] # L'argument --fix permet à Ruff de corriger les erreurs tout seul !
+
+  # 3. BLACK : Le formateur de code standard de Python (Réorganise tes espaces, parenthèses, etc.)
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
