@@ -1,0 +1,62 @@
+version: '3.9'
+services:
+  cassandra-node1: # Premier nœud (seed)
+    image: cassandra:4.1
+    container_name: cassandra-node1
+    hostname: cassandra-node1
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: SolarMboa
+      CASSANDRA_DC: Cameroun
+      CASSANDRA_SEEDS: cassandra-node1
+    volumes:
+      - cass1-data:/var/lib/cassandra
+    networks:
+      - solarmboa-cassandra
+    healthcheck:
+      test: ["CMD", "nodetool", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  cassandra-node2: # Deuxième nœud
+    image: cassandra:4.1
+    container_name: cassandra-node2
+    hostname: cassandra-node2
+    environment:
+      CASSANDRA_CLUSTER_NAME: SolarMboa
+      CASSANDRA_DC: Cameroun
+      CASSANDRA_SEEDS: cassandra-node1 # Pointe vers le seed
+    volumes:
+      - cass2-data:/var/lib/cassandra
+    networks:
+      - solarmboa-cassandra
+    depends_on:
+      cassandra-node1:
+        condition: service_healthy
+
+  cassandra-node3: # Troisième nœud
+    image: cassandra:4.1
+    container_name: cassandra-node3
+    hostname: cassandra-node3
+    environment:
+      CASSANDRA_CLUSTER_NAME: SolarMboa
+      CASSANDRA_DC: Cameroun
+      CASSANDRA_SEEDS: cassandra-node1
+    volumes:
+      - cass3-data:/var/lib/cassandra
+    networks:
+      - solarmboa-cassandra
+    depends_on:
+      cassandra-node1:
+        condition: service_healthy
+
+volumes:
+  cass1-data: {}
+  cass2-data: {}
+  cass3-data: {}
+
+networks:
+  solarmboa-cassandra:
+    driver: bridge # Cette option est valide en version 3.9.
