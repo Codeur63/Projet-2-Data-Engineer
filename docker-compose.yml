@@ -19,6 +19,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    deploy:
+      ressources:
+        limits:
+          memory: 521M  
 
   cassandra-node2: # Deuxième nœud
     image: cassandra:4.1
@@ -35,6 +39,10 @@ services:
     depends_on:
       cassandra-node1:
         condition: service_healthy
+    deploy:
+      ressources:
+        limits:
+          memory: 512M     
 
   cassandra-node3: # Troisième nœud
     image: cassandra:4.1
@@ -51,11 +59,33 @@ services:
     depends_on:
       cassandra-node1:
         condition: service_healthy
+    deploy:
+      ressources:
+        limits:
+          memory: 5212M
+
+  redis:
+    image: redis
+    container_name:
+    restart:
+    port:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-solarmboa
+    deploy:
+      ressources:
+        limits:
+          memory: 256M    
+
+
 
 volumes:
   cass1-data: {}
   cass2-data: {}
   cass3-data: {}
+  redis-data: {}
+  mongo-data: {}
 
 networks:
   solarmboa-cassandra:
