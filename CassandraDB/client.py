@@ -59,3 +59,14 @@ def close_connection():
         logger.info("Cassandra cluster shutdown.")
         print("Cassandra cluster shutdown.")
         _cluster = None
+
+
+if __name__ == '__main__':
+    print('-_'*40)
+    print('\n Test de connection a cassandra')
+    try:
+        conn = get_session()
+        print("Connexion: ", conn)
+    except Exception as e:  
+        print(f"Vous avez une erreur :{e}")  
+        
