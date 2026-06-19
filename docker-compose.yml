@@ -1,98 +1,83 @@
 version: '3.9'
+
 services:
-  # cassandra-node1: # Premier nœud (seed)
-  #   image: cassandra:4.1
-  #   container_name: cassandra-node1
-  #   hostname: cassandra-node1
-  #   ports:
-  #     - "9042:9042"
-  #   environment:
-  #     CASSANDRA_CLUSTER_NAME: SolarMboa
-  #     CASSANDRA_DC: Cameroun
-  #     CASSANDRA_RACK: Rac1
-  #     CASSANDRA_SEEDS: cassandra-node1
-  #     MAX_HEAP_SIZE: 1G      # Limite la RAM de Java à 512 Mo
-  #     HEAP_NEWSIZE: 200M       # Taille de la zone jeune de Java
-  #   volumes:
-  #     - cass1-data:/var/lib/cassandra
-  #   networks:
-  #     - solarmboa-network
-  #   healthcheck:
-  #     test: ["CMD", "nodetool", "status"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 10
-  #     start_period: 120s 
-  #   deploy:
-  #     ressources:
-  #       limits:
-  #         memory: 1G
+  cassandra-node1: # Premier nœud (seed)
+    image: cassandra:4.1
+    container_name: cassandra-node1
+    hostname: cassandra-node1
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: SolarMboa
+      CASSANDRA_DC: Cameroun
+      CASSANDRA_RACK: Rac1
+      CASSANDRA_SEEDS: cassandra-node1
+      MAX_HEAP_SIZE: 1G      # Limite la RAM de Java à 512 Mo
+      HEAP_NEWSIZE: 200M       # Taille de la zone jeune de Java
+    volumes:
+      - cass1-data:/var/lib/cassandra
+    networks:
+      - solarmboa-network
+    healthcheck:
+      test: ["CMD", "nodetool", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s 
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
-  # cassandra-node2: # Deuxième nœud
-  #   image: cassandra:4.1
-  #   container_name: cassandra-node2
-  #   hostname: cassandra-node2
-  #   ports:
-  #     - "9043:9042"
-  #   environment:
-  #     CASSANDRA_CLUSTER_NAME: SolarMboa
-  #     CASSANDRA_DC: Cameroun
-  #     CASSANDRA_RACK: Rac1
-  #     CASSANDRA_SEEDS: cassandra-node1 # Pointe vers le seed
-  #     MAX_HEAP_SIZE: 1G      # Limite la RAM de Java à 512 Mo
-  #     HEAP_NEWSIZE: 200M       # Taille de la zone jeune de Java
-  #   volumes:
-  #     - cass2-data:/var/lib/cassandra
-  #   networks:
-  #     - solarmboa-network
-  #   depends_on:
-  #     cassandra-node1:
-  #       condition: service_healthy
-  #   deploy:
-  #     ressources:
-  #       limits:
-  #         memory: 1G
+  cassandra-node2: # Deuxième nœud
+    image: cassandra:4.1
+    container_name: cassandra-node2
+    hostname: cassandra-node2
+    ports:
+      - "9043:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: SolarMboa
+      CASSANDRA_DC: Cameroun
+      CASSANDRA_RACK: Rac1
+      CASSANDRA_SEEDS: cassandra-node1 # Pointe vers le seed
+      MAX_HEAP_SIZE: 1G      # Limite la RAM de Java à 512 Mo
+      HEAP_NEWSIZE: 200M       # Taille de la zone jeune de Java
+    volumes:
+      - cass2-data:/var/lib/cassandra
+    networks:
+      - solarmboa-network
+    depends_on:
+      cassandra-node1:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
-  # cassandra-node3: # Troisième nœud
-  #   image: cassandra:4.1
-  #   container_name: cassandra-node3
-  #   hostname: cassandra-node3
-  #   ports:
-  #     - "9044:9042"
-  #   environment:
-  #     CASSANDRA_CLUSTER_NAME: SolarMboa
-  #     CASSANDRA_DC: Cameroun
-  #     CASSANDRA_RACK: Rac1
-  #     CASSANDRA_SEEDS: cassandra-node1
-  #     MAX_HEAP_SIZE: 1G      # Limite la RAM de Java à 512 Mo
-  #     HEAP_NEWSIZE: 200M       # Taille de la zone jeune de Java
-  #   volumes:
-  #     - cass3-data:/var/lib/cassandra
-  #   networks:
-  #     - solarmboa-network
-  #   depends_on:
-  #     cassandra-node1:
-  #       condition: service_healthy
-  #   deploy:
-  #     ressources:
-  #       limits:
-  #         memory: 1G
-
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: redis-solarmboa
-  #   restart: unless-stopped
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis_data:/data
-  #   command: redis-server --appendonly yes # Sauvegarde les données sur le disque
-  #   networks:
-  #     - solarmboa-cassandra # On le met sur le même réseau pour qu'il puisse parler à Cassandra si besoin
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 256M     # Redis est très léger, 256Mo lui suffisent amplement   
+  cassandra-node3: # Troisième nœud
+    image: cassandra:4.1
+    container_name: cassandra-node3
+    hostname: cassandra-node3
+    ports:
+      - "9044:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: SolarMboa
+      CASSANDRA_DC: Cameroun
+      CASSANDRA_RACK: Rac1
+      CASSANDRA_SEEDS: cassandra-node1
+      MAX_HEAP_SIZE: 1G      # Limite la RAM de Java à 512 Mo
+      HEAP_NEWSIZE: 200M       # Taille de la zone jeune de Java
+    volumes:
+      - cass3-data:/var/lib/cassandra
+    networks:
+      - solarmboa-network
+    depends_on:
+      cassandra-node1:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   redis:
     image: redis:7-alpine
@@ -119,102 +104,94 @@ services:
         limits:
           memory: 128M  
 
-  # mongodb:
-  #   image: mongo:7.0
-  #   container_name: solarmboa-mongodb
-  #   hostname: mongodb
-  #   restart: unless-stopped
-  #   ports:
-  #     - "27017:27017"
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
-  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-  #     MONGO_INITDB_DATABASE: solarmboa
-  #   volumes:
-  #     - mongo-data:/data/db
-  #   networks:
-  #     - solarmboa-network
-  #   healthcheck:
-  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 30s
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 384M
+  mongodb:
+    image: mongo:7.0
+    container_name: solarmboa-mongodb
+    hostname: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB} 
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
+    volumes:
+      - ./MongoDB/init.js:/docker-entrypoint-initdb.d/init.js:ro
+      - mongo-data:/data/db
+    networks:
+      - solarmboa-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    mem_limit: 384m
+    cpus: 0.50  
+      
+   
+  influxdb:
+    image: influxdb:2.7
+    container_name: solarmboa-influxdb
+    hostname: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    networks:
+      - solarmboa-network
+    mem_limit: 1G
+    cpus: 0.50
 
-  # neo4j:
-  #   image: neo4j:5.15-community
-  #   container_name: solarmboa-neo4j
-  #   hostname: neo4j
-  #   restart: unless-stopped
-  #   ports:
-  #     - "7474:7474"   # Interface web browser
-  #     - "7687:7687"   # Bolt protocol (connexion driver)
-  #   environment:
-  #     NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
-  #     NEO4J_PLUGINS: '["apoc"]'
-  #     NEO4J_server_memory_heap_initial__size: "256M"
-  #     NEO4J_server_memory_heap_max__size: "512M"
-  #     NEO4J_server_memory_pagecache__size: "128M"
-  #   volumes:
-  #     - neo4j-data:/data
-  #     - neo4j-logs:/logs
-  #   networks:
-  #     - solarmboa-network
-  #   healthcheck:
-  #     test: ["CMD", "neo4j", "status"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 10
-  #     start_period: 60s
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 640M        
+  neo4j:
+    image: neo4j:5.20-community
+    container_name: solarmboa-neo4j
+    hostname: neo4j
+    restart: unless-stopped
 
-  # influxdb:
-  #   image: influxdb:2.7-alpine
-  #   container_name: solarmboa-influxdb
-  #   hostname: influxdb
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8086:8086"
-  #   environment:
-  #     DOCKER_INFLUXDB_INIT_MODE: setup
-  #     DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
-  #     DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
-  #     DOCKER_INFLUXDB_INIT_ORG: solarmboa
-  #     DOCKER_INFLUXDB_INIT_BUCKET: telemetry
-  #     DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_TOKEN}
-  #   volumes:
-  #     - influxdb-data:/var/lib/influxdb2
-  #   networks:
-  #     - solarmboa-network
-  #   healthcheck:
-  #     test: ["CMD", "influx", "ping"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 30s
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 384M
+    ports:
+      - "7474:7474"
+      - "7687:7687"
 
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 512m
+      NEO4J_dbms_memory_pagecache_size: 512m
+
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+      - neo4j-import:/var/lib/neo4j/import
+
+    networks:
+      - solarmboa-network
+
+    mem_limit: 1G
+    cpus: 0.75
 
 volumes:
-  # cass1-data: {}
-  # cass2-data: {}
-  # cass3-data: {}
+  cass1-data: {}
+  cass2-data: {}
+  cass3-data: {}
   redis-data: {}
-  # mongo-data: {}
-  # neo4j-data: {}
-  # neo4j-logs: {}
-  # influxdb-data: {}
-  # mongo-data: {}
+  mongo-data: {}
+  neo4j-data: {}
+  neo4j-logs: {}
+  neo4j-import: {}
+  influxdb-data: {}
+  influxdb-config: {}
 
 networks:
   solarmboa-network:
