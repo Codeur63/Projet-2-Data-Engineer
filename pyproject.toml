@@ -18,14 +18,19 @@ dependencies = [
     "plotly (>=6.7.0,<7.0.0)",
     "scipy (>=1.17.1,<2.0.0)",
     "neo4j (>=6.2.0,<7.0.0)",
-    "redis[hiredis] (>=8.0.0,<9.0.0)"
+    "redis[hiredis] (>=8.0.0,<9.0.0)",
+    "streamlit (>=1.58.0,<2.0.0)",
+    "pydantic-settings (>=2.14.1,<3.0.0)",
+    "influxdb-client (>=1.50.0,<2.0.0)"
 ]
 
 [tool.poetry]
-# packages = [{ include = "solarmboa", from = "src" }] 
 packages = [
-    { include = "cassandra", from = "CassandraDB/src" },
-    { include = "src", from = "Redis" }
+    { include = "src", from = "Redis" },
+    { include = "solarmboa", from = "MongoDB/src"},
+    { include = "solarmboa_influxdb", from ="InfluxDB/src"},
+    { include = "cassandradb", from="CassandraDB/src" },
+    { include = "solarmboa_graph", from="Neo4JDB/src" },
 ]
 
 [build-system]
