@@ -24,6 +24,7 @@ Dans notre projet il repond au besoin de pouvoir acceder facilement ou bien rapi
 | `alert:sensors:{date}` | Set | Capteurs en alerte | 24h |
 | `metrics:count:{sensor_id}:{date}` | String/Counter | Nombre de mesures reçues par jour | 24h |
 | `leaderboard:prod:{date}` | Sorted Set | Classement production solaire | 24h |
+| `get_installation_by_sensor{}` | Benchmark | Voir le temps de latence Redis Vs Source | Aucune  
 
 
 ## Configuration mémoire et LRU
