@@ -130,8 +130,8 @@ services:
       start_period: 30s
     mem_limit: 384m
     cpus: 0.50  
-      
-   
+     
+  
   influxdb:
     image: influxdb:2.7
     container_name: solarmboa-influxdb
