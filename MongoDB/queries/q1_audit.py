@@ -54,5 +54,4 @@ for ct in col.distinct('region'):
 for ct in col.distinct('tariff_plan'):
     rapport['par_plan'][ct] = col.count_documents({'tariff_plan':ct})        
     
-
 print(rapport)
