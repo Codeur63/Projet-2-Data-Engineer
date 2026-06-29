@@ -147,6 +147,7 @@ def config_mem():
             used_mem = r.info("memory").get("used_memory_human")
             print(f"{i} clés insérées | mémoire={used_mem} | evicted_keys={evicted}")
             time.sleep(0.5)
+            
 
         if r.info("stats").get("evicted_keys", 0) > 0:
             break
