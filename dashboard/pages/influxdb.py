@@ -56,7 +56,7 @@ with tab_overview:
 
     count_query = f'''
 from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2025-07-01T00:00:00Z)
+  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "sensor_telemetry")
   |> filter(fn: (r) => r._field == "solar_output_w")
   |> count()
@@ -68,7 +68,7 @@ from(bucket: "{bucket}")
 
     avg_battery_query = f'''
 from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2025-07-01T00:00:00Z)
+  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "sensor_telemetry")
   |> filter(fn: (r) => r._field == "battery_level_pct")
   |> mean()
@@ -98,7 +98,7 @@ with tab_regions:
 
     region_query = f'''
 from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2025-07-01T00:00:00Z)
+  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "sensor_telemetry")
   |> filter(fn: (r) => r._field == "{metric}")
   |> group(columns: ["region"])
@@ -122,7 +122,7 @@ with tab_alerts:
 
     alert_query = f'''
 from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2025-07-01T00:00:00Z)
+  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "sensor_telemetry")
   |> filter(fn: (r) => exists r.alert_code)
   |> group(columns: ["alert_code"])
@@ -141,6 +141,7 @@ from(bucket: "{bucket}")
 
         st.dataframe(df, use_container_width=True)
         st.bar_chart(df.set_index("alert_code")["count"])
+        st.scatter_chart(df.set_index("alert_code")["count"])
 
 
 with tab_sensor:
@@ -156,7 +157,7 @@ with tab_sensor:
 
     sensor_query = f'''
 from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2025-07-01T00:00:00Z)
+  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
   |> filter(fn: (r) => r._measurement == "sensor_telemetry")
   |> filter(fn: (r) => r.sensor_id == "{sensor_id}")
   |> filter(fn: (r) => r._field == "{sensor_metric}")

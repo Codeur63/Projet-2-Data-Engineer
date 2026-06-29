@@ -119,7 +119,6 @@ with tab_distributors:
                    i.status AS status,
                    i.tariff_plan AS tariff_plan
             ORDER BY i.installation_id
-            LIMIT 100
             """,
             {"distributor_id": distributor_id},
         )
@@ -154,6 +153,7 @@ with tab_technicians:
 
     technician_id = st.text_input("Technician ID", value="TECH-0001")
 
+
     if st.button("Afficher les installations maintenues"):
         df_detail = run_query(
             """
@@ -164,7 +164,6 @@ with tab_technicians:
                    i.status AS status,
                    i.tariff_plan AS tariff_plan
             ORDER BY i.installation_id
-            LIMIT 100
             """,
             {"technician_id": technician_id},
         )
@@ -187,7 +186,6 @@ with tab_anomalies:
         RETURN i.installation_id AS installation_id,
                i.region AS region,
                i.status AS status
-        LIMIT 100
         """
     )
 
@@ -205,7 +203,6 @@ with tab_anomalies:
                d.region AS distributor_region,
                i.installation_id AS installation_id,
                i.region AS installation_region
-        LIMIT 100
         """
     )
 
@@ -235,7 +232,26 @@ with tab_explore:
         LIMIT 100
         """
     )
-
+    
+    df_region = run_query(
+        """
+        MATCH (i:Installation)-[:LOCATED_IN]->(r:Region) 
+        RETURN r.name As region,count(i) As total ;
+        """
+    )
+    
+    
+    if not df_region.empty:
+        df_region = df_region.rename(columns={"_id":"installation"})
+        st.dataframe(df_region, use_container_width=True)
+        st.bar_chart(df_region.set_index('region')['total'])
+    
+    # if df_region.empty:
+    #     st.warning("Aucune relation MAINTAINS trouvée.")
+    # else:
+    #     st.dataframe(df_region, use_container_width=True)
+    #     st.bar_chart(df_region.set_index("technician_name")["installations_maintained"])
+        
     if df_paths.empty:
         st.info("Aucun chemin Distributor → Technician → Installation trouvé.")
     else:

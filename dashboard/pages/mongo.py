@@ -50,27 +50,31 @@ with tab_overview:
         {"$match": {"status": "active"}},
         {"$group": {"_id": None, "ca": {"$sum": "$contract.monthly_xaf"}}},
     ]
+    
+    ca = sum(doc.get("contract",{}).get("monthly_xaf",0) for doc in col.find({}) )
+    
+
     revenue_result = list(col.aggregate(revenue_pipeline))
     ca_total = revenue_result[0]["ca"] if revenue_result else 0
 
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3,c5 = st.columns(4)
     c1.metric("Installations", f"{total:,}")
     c2.metric("Actives", f"{active:,}")
-    c3.metric("Maintenance", f"{maintenance:,}")
-    c4.metric("CA mensuel actif", f"{ca_total:,.0f} XAF")
+    c3.metric("CA Global", f"{ca:,.0f} XAF")
+    c5.metric("CA mensuel actif", f"{ca_total:,.0f} XAF")
 
-    st.subheader("Répartition par statut")
+    st.subheader("Répartition des capteurs par statut")
 
     status_pipeline = [
-        {"$group": {"_id": "$status", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
+        {"$group": {"_id": "$status", "Total": {"$sum": 1}}},
+        {"$sort": {"Total": -1}},
     ]
     df_status = pd.DataFrame(list(col.aggregate(status_pipeline)))
 
     if not df_status.empty:
         df_status = df_status.rename(columns={"_id": "status"})
         st.dataframe(df_status, use_container_width=True)
-        st.bar_chart(df_status.set_index("status")["count"])
+        st.bar_chart(df_status.set_index("Total")["status"])
 
 
 # ======================================================
@@ -80,7 +84,7 @@ with tab_overview:
 with tab_business:
     st.header("Indicateurs business")
 
-    st.subheader("CA mensuel par région")
+    st.subheader("Chiffre d'Affaire mensuel par région")
 
     region_pipeline = [
         {"$match": {"status": "active", "contract.monthly_xaf": {"$gt": 0}}},
@@ -124,7 +128,7 @@ with tab_business:
         st.dataframe(df_plan, use_container_width=True)
         st.bar_chart(df_plan.set_index("plan")["ca_total"])
 
-    st.subheader("Top 10 distributeurs par CA")
+    st.subheader("Top 10 distributeurs par CA (installations actives) ")
 
     distributor_pipeline = [
         {"$match": {"status": "active", "contract.monthly_xaf": {"$gt": 0}}},
@@ -182,7 +186,8 @@ with tab_anomalies:
 
     df_no_gps = pd.DataFrame(list(col.aggregate(no_gps_pipeline)))
     st.metric("Sans GPS", len(df_no_gps))
-    st.dataframe(df_no_gps, use_container_width=True)
+    if len(df_no_gps) > 0:
+        st.dataframe(df_no_gps, use_container_width=True)
 
     st.subheader("Installations avec plus de 3 maintenances correctives")
 
@@ -216,17 +221,48 @@ with tab_anomalies:
 
     df_corrective = pd.DataFrame(list(col.aggregate(corrective_pipeline)))
     st.metric("Maintenances excessives", len(df_corrective))
-    st.dataframe(df_corrective, use_container_width=True)
+    
+    if len(df_corrective) > 0:
+        st.dataframe(df_corrective, use_container_width=True)
 
-    st.subheader("Passages Standard → Premium")
+    st.header("Changement de plan de contract")
+    # st.subheader("Passages Standard → Premium")
 
-    upgrade_pipeline = [
+    # upgrade_pipeline = [
+    #     {
+    #         "$match": {
+    #             "contract.history": {
+    #                 "$elemMatch": {
+    #                     "from_plan": "Standard",
+    #                     "to_plan": "Premium",
+    #                 }
+    #             }
+    #         }
+    #     },
+    #     {
+    #         "$project": {
+    #             "_id": 0,
+    #             "installation_id": 1,
+    #             "client_name": 1,
+    #             "contract.plan": 1,
+    #             "contract.history": 1,
+    #             "contract.monthly_xaf": 1,
+    #         }
+    #     },
+    # ]
+
+    # df_upgrade = pd.DataFrame(list(col.aggregate(upgrade_pipeline)))
+    # st.metric("Upgrades détectés", len(df_upgrade))
+    # st.dataframe(df_upgrade, use_container_width=True)
+
+
+    upgrade_pip = [
         {
             "$match": {
                 "contract.history": {
                     "$elemMatch": {
-                        "from_plan": "Standard",
-                        "to_plan": "Premium",
+                        "from_plan": {"$exists": True},
+                        "to_plan": {"$exists": True},
                     }
                 }
             }
@@ -242,10 +278,10 @@ with tab_anomalies:
             }
         },
     ]
-
-    df_upgrade = pd.DataFrame(list(col.aggregate(upgrade_pipeline)))
-    st.metric("Upgrades détectés", len(df_upgrade))
-    st.dataframe(df_upgrade, use_container_width=True)
+    
+    df_up = pd.DataFrame(list(col.aggregate(upgrade_pip)))
+    st.metric("Upgrades détectés", len(df_up))
+    st.dataframe(df_up, use_container_width=True)
 
 
 # ======================================================
@@ -257,7 +293,11 @@ with tab_search:
 
     col1, col2, col3 = st.columns(3)
 
-    region = col1.text_input("Région", "")
+    # region = col1.text_input("Région", "")
+    region = col1.selectbox(
+        "Région",
+        ["Adamaoua", "Ouest", "Littoral", "Centre", "Extrême-Nord", "Est", "Nord-Ouest"]
+    )
     status = col2.selectbox(
         "Statut",
         ["", "active", "maintenance", "suspended", "churned", "pending"],

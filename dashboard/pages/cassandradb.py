@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("🧱 Cassandra — Historique massif IoT SolarMboa")
+st.title("🧱 Cassandra — Ingestion massive IoT SolarMboa")
 
 st.markdown(
     """
@@ -48,17 +48,20 @@ with tab_overview:
     st.markdown(
         """
         ```text
-        sensor_telemetry_by_sensor_day
+        daily_stats
         └── dernières mesures d'un capteur par jour
 
-        sensor_telemetry_by_region_day
+        sensors_registry
         └── monitoring régional par jour
 
-        sensor_alerts_by_day
+        sensor_alerts
         └── alertes par jour et type
 
         sensor_last_reading
         └── dernier état connu par région
+        
+        sensor_readings
+        └── toutes les lectures
         ```
         """
     )
@@ -77,10 +80,9 @@ with tab_sensor:
     limit = st.slider("Nombre de mesures", 10, 500, 100)
 
     if st.button("Charger les mesures du capteur"):
-        rows = repo.get_last_measures_by_sensor(
+        rows = repo.lire_dernieres_mesures(
             sensor_id=sensor_id,
-            bucket=bucket,
-            limit=limit,
+            depuis=bucket
         )
 
         if rows:

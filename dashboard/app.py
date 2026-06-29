@@ -136,11 +136,11 @@ with col2:
     st.markdown(
         """
         <div class="card">
-            <span class="badge-wip">À construire</span>
+            <span class="badge">Termine</span>
             <h3>🍃 MongoDB</h3>
             <p>
                 MongoDB stockera les profils enrichis des installations :
-                équipements, contrat, client, localisation et historique.
+                équipements, contrat, client, localisation et historique qui peuvent etre différent entre capteurs
             </p>
         </div>
         """,
@@ -151,11 +151,11 @@ with col3:
     st.markdown(
         """
         <div class="card">
-            <span class="badge-wip">À construire</span>
-            <h3>📈 Cassandra / InfluxDB</h3>
+            <span class="badge">Terminer </span>
+            <h3>📈 Cassandra</h3>
             <p>
-                Cassandra et InfluxDB seront dédiées aux séries temporelles :
-                ingestion massive et métriques solaires quasi temps réel.
+                Cassandra seras dedié à stocker des données :
+                ingestion massive, métriques solaires, regions et capteurs quasi temps réel.
             </p>
         </div>
         """,
@@ -166,11 +166,11 @@ with col4:
     st.markdown(
         """
         <div class="card">
-            <span class="badge-wip">À construire</span>
-            <h3>📈 Cassandra / InfluxDB</h3>
+            <span class="badge">Terminer </span>
+            <h3>📈 InfluxDB</h3>
             <p>
-                Cassandra et InfluxDB seront dédiées aux séries temporelles :
-                ingestion massive et métriques solaires quasi temps réel.
+                InfluxDB seront dédiées aux séries temporelles :
+                ingestion massive,métriques solaires, et alert code temps réel.
             </p>
         </div>
         """,
@@ -182,11 +182,11 @@ with col5:
     st.markdown(
         """
         <div class="card">
-            <span class="badge-wip">À construire</span>
-            <h3>📈 Cassandra / InfluxDB</h3>
+            <span class="badge">Terminer </span>
+            <h3>📈  Neo4J </h3>
             <p>
-                Cassandra et InfluxDB seront dédiées aux séries temporelles :
-                ingestion massive et métriques solaires quasi temps réel.
+                Neo4j seras dédiées aux relation entre les tables :
+                Récupération rapide des liens entre les tables sous forme de graph ou de table.
             </p>
         </div>
         """,
@@ -194,7 +194,7 @@ with col5:
     )    
         
 
-st.markdown("## Architecture cible")
+st.markdown("## Architecture cible pour solarmboa")
 
 st.markdown(
     """
@@ -207,17 +207,127 @@ Redis ───────────────► Cache sessions / compteur
    ↓
 MongoDB ─────────────► Profils installations
    ↓
-Cassandra / InfluxDB ─► Séries temporelles et métriques temps réel
+Cassandra ─────────────► Ingestion Massive des données dans un cluster
    ↓
-Neo4j ─────────────► Graph
+InfluxDB ─────────────► Séries temporelles et métriques temps réel    
+   ↓
+Neo4j ─────────────► Relation entre les tables, Graph
+  ↓
+AWS Finops
    ↓
 Data Lake AWS S3
    ↓
 Data Warehouse
    ↓
-BI / Dashboard
-
+BI / Dashboard Streamlit
 
 """)
 
-st.info("Utilise le menu latéral pour ouvrir la page Redis et lancer une simulation de télémétrie.")
+st.info("Developper le menu latéral pour ouvrir les pages de simulations des BD NoSQL.")
+
+st.markdown(
+    '''
+    # SolarMboa — Architecture réseau GCP
+
+## Objectif
+
+Concevoir une infrastructure réseau sécurisée avec deux environnements séparés :
+
+- `solarmboa-prod-vpc`
+- `solarmboa-staging-vpc`
+
+Chaque environnement possède ses propres subnets, règles firewall minimales et accès contrôlés.
+
+## Diagramme réseau
+
+```mermaid
+flowchart TD
+
+    USERS[Utilisateurs / Dashboard]
+    IOT[Capteurs IoT]
+    
+    USERS --> LB[HTTPS Load Balancer]
+    IOT --> LB
+
+    LB --> CR[Cloud Run API Ingestion]
+
+    subgraph PROD[solarmboa-prod-vpc]
+        CR --> PUBSUB[Pub/Sub]
+        PUBSUB --> DATAFLOW[Dataflow / Cloud Run Jobs]
+        DATAFLOW --> GCS[GCS Bronze / Silver / Gold]
+        GCS --> BQ[BigQuery]
+        
+        CR --> REDIS[Memorystore Redis]
+        CR --> MONGO[MongoDB Atlas / VM privée]
+        CR --> INFLUX[InfluxDB privé]
+        CR --> NEO4J[Neo4j privé]
+        CR --> CASS[Cassandra / Bigtable alternative]
+    end
+
+    subgraph STAGING[solarmboa-staging-vpc]
+        CR_STG[Cloud Run Staging]
+        GCS_STG[GCS staging]
+        BQ_STG[BigQuery staging]
+    end
+
+    ADMIN[Admin / DevOps] --> IAP[IAP / Bastion sécurisé]
+    IAP --> PROD
+    IAP --> STAGING
+```
+
+# SolarMboa — Architecture réseau AWS
+
+## Objectif
+
+Déployer SolarMboa sur AWS avec deux environnements isolés :
+
+- `solarmboa-prod-vpc`
+- `solarmboa-staging-vpc`
+
+Chaque environnement contient des subnets publics uniquement pour l’entrée contrôlée, et des subnets privés pour les services applicatifs et data.
+
+## Diagramme
+
+```mermaid
+flowchart TD
+
+    USERS[Utilisateurs / Dashboard]
+    IOT[Capteurs IoT]
+
+    USERS --> ALB[Application Load Balancer HTTPS]
+    IOT --> APIGW[API Gateway]
+
+    APIGW --> LAMBDA[Lambda ingestion IoT]
+    ALB --> ECS[ECS Fargate FastAPI / Streamlit]
+
+    subgraph PROD[solarmboa-prod-vpc]
+        ECS --> REDIS[ElastiCache Redis]
+        ECS --> DOCDB[DocumentDB / MongoDB Atlas]
+        ECS --> NEO4J[Neo4j privé sur EC2/ECS]
+        ECS --> INFLUX[InfluxDB privé sur ECS/EC2]
+        ECS --> CASS[Cassandra sur EC2/EKS]
+
+        LAMBDA --> SQS[SQS Buffer]
+        SQS --> ETL[ECS Task / Glue Job]
+        ETL --> S3B[S3 Bronze]
+        S3B --> S3S[S3 Silver]
+        S3S --> S3G[S3 Gold]
+        S3G --> ATHENA[Athena / Redshift Spectrum]
+        ATHENA --> BI[QuickSight]
+    end
+
+    ADMIN[Admin DevOps] --> SSM[SSM Session Manager]
+    SSM --> PROD    
+
+
+    
+    '''
+)
+
+st.info('''    Règles de sécurité
+Aucune base NoSQL exposée publiquement.
+Accès admin via AWS Systems Manager, pas SSH public.
+Buckets S3 privés avec Block Public Access activé.
+API publique uniquement via API Gateway ou ALB HTTPS.
+Les services data restent en private subnets.
+Secrets stockés dans AWS Secrets Manager. ''')
