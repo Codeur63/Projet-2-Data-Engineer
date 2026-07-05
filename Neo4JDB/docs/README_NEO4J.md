@@ -3,18 +3,24 @@
 ### Statut : APPROUVÉ | Date: Mars 2026 | Auteur: Équipe Data
 
 ## CONTEXTE
-Solarmboa gère 4800 installations solaires dont des distrubuteurs pour vendre les installations, qui emploies des techniciens pour maintenir les installations suivant, qui sont dans des régions précises. Nous devons être capables de faire des requêtes rapide grâce a des jointures pour trouver certains correlations entre plusieurs tables. La cohérence est réquise pour éviter des erreurs d'installation     
+SolarMboa gère environ 4 800 installations solaires, avec des distributeurs qui vendent les installations, des techniciens qui assurent la maintenance, et des régions associées à chaque entité. Nous devons exécuter rapidement des requêtes de corrélation entre plusieurs ensembles de données afin d’identifier les liens entre installations, distributeurs, techniciens et zones géographiques. La cohérence est nécessaire pour éviter les erreurs d’affectation ou d’installation.  
 
 ## DÉCISION
-Nous utilisons Neo4J 5.20-community pour pouvoir realiser des relations ou connexion entre nos différentes tables. Le dataset network_graph.csv est notre dataset de reference relationnel que nous allons importer dans al BD pour les relations, tout aussi en utilisant network_node_distributor.csv et network_node_technicians.csv pour les inclures.
+SolarMboa gère environ 4 800 installations solaires, avec des distributeurs qui vendent les installations, des techniciens qui assurent la maintenance, et des régions associées à chaque entité. Nous devons exécuter rapidement des requêtes de corrélation entre plusieurs ensembles de données afin d’identifier les liens entre installations, distributeurs, techniciens et zones géographiques. La cohérence est nécessaire pour éviter les erreurs d’affectation ou d’installation.  
+
 
 ## POSITIONNEMENT CAP
-Neo4J est un système CP (Cohérence + Tolérance au Partitionnement). En cas de mauvaise cohérence entre les rélations de nos données ont risque de ne pas avoir le résultat souhaité, il faut donc privilegiés la cohérence et la Tolérance.   
+Neo4j est positionné comme un système CP dans notre contexte, car la cohérence des relations est prioritaire pour garantir des résultats fiables lors des requêtes métier. En cas de conflit ou d’incohérence, il vaut mieux préserver l’intégrité du graphe que retourner un résultat erroné. Les relations étant au cœur du modèle, toute erreur de liaison pourrait provoquer une mauvaise attribution de technicien ou de distributeur.
+   
 
 ## ALTERNATIVES CONSIDÉRÉES 
-MySQL avec csv: Supporte les csv mais chaque requete seront des interminables jointures et rendrons les requetes beaucoup plus lente.
+MySQL avec CSV : possible pour stocker les données tabulaires, mais les jointures deviennent rapidement lourdes et lentes lorsque les relations sont nombreuses. Ce modèle convient moins bien aux parcours relationnels complexes que Neo4j.
+
+PostgreSQL : puissant et cohérent, mais moins naturel qu’un graphe pour représenter des relations multiples entre installations, techniciens, distributeurs et régions.
 
 ## CONSÉQUENCES
-Positives : Intégration facile des rélations, requêtes plus simple et plus rapide, scalabilité vertical.
-Négatives : 
-Risques mitigés :  
+Positives : modèle intuitif pour les relations, requêtes plus simples et plus rapides sur les connexions entre entités, meilleure lisibilité des dépendances métier, et adaptation naturelle aux cas d’usage orientés graphe.
+
+Négatives : il faut bien modéliser le graphe dès le départ, car le schéma doit être pensé autour des relations et des requêtes cibles. Neo4j Community a aussi des limites fonctionnelles par rapport à l’édition Enterprise, notamment pour les déploiements plus avancés.
+
+Risques mitigés : définir des labels et relations clairs, éviter les propriétés inutiles sur les liens, tester les requêtes Cypher les plus fréquentes, et documenter les chemins de navigation attendus. Il faut aussi prévoir une stratégie d’évolution du graphe si le volume ou la complexité des relations augmente.
