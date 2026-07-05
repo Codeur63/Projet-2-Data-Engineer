@@ -77,15 +77,60 @@ def build_dim_region(df_installations, df_distributors, df_technicians):
 
     return dim_region
 
-def build_dim_client(df_installation):
-    * Nom
-* Type de client
-* Segment
-* Région
-    client = pd.concat(
-        df_installation["client_name"]
-        df_installation['']
+
+def build_dim_city(df_installations):
+    city = df_installations['city'].dropna().drop_duplicates().sort_values()
+    
+    dim_city = pd.DataFrame({'city':city}) 
+    dim_city.insert(0,'city_key', range(1, len(dim_city)+1))
+    return dim_city
+
+
+
+
+def build_dim_type(df_installation):
+    client_type = df_installation['client_type'].dropna().drop_duplicates().sort_values()
+    dim_type = pd.DataFrame({'client_type':client_type})
+    
+    dim_type.insert(0, 'type_key', range(1,len(dim_type)+1))    
+    return dim_type
+
+
+def build_dim_client(df_installation, dim_region, dim_type):
+    dim_client = df_installation[['client_name','client_type','region']].merge(
+        dim_region, 
+        left_on="region", 
+        right_on='region_name', 
+        how='left'
     )
+    
+    dim_client = dim_client.merge(
+        dim_type,
+        left_on='client_type',
+        right_on='client_type',
+        how='left'
+    )
+         
+    dim_client.insert(0, "client_key", range(1, len(dim_client) + 1))
+    
+    return dim_client[
+        [
+         "client_key",   
+        'client_name',
+        'type_key',
+        'region_key'
+        ]
+        ]
+
+def build_dim_relation(df_graph):
+    relation = df_graph['relation'].dropna().drop_duplicates().sort_values()
+
+    dim_relation = pd.DataFrame({'relation':relation}) 
+    dim_relation.insert(0, 'relation_key', range(1,len(dim_relation)+1))    
+    
+    return dim_relation
+
+
 
 def build_dim_installation(df_installations, dim_region, dim_contract_plan):
     dim = df_installations[
@@ -271,14 +316,6 @@ def build_dim_alert(df_telemetry):
     dim_alert = pd.DataFrame({"alert_code": alerts})
     dim_alert.insert(0, "alert_key", range(1, len(dim_alert) + 1))
 
-    def severity(code):
-        if code in {"FAULT_02", "OVERCURRENT", "OVR_V"}:
-            return "HIGH"
-        if code in {"LOW_BATTERY"}:
-            return "MEDIUM"
-        return "UNKNOWN"
-
-    dim_alert["severity"] = dim_alert["alert_code"].apply(severity)
     dim_alert["alert_category"] = "sensor"
 
     return dim_alert
@@ -308,7 +345,6 @@ def build_fact_telemetry_daily(df_telemetry, dim_installation, dim_date, dim_ale
         on="installation_id",
         how="left",
     )
-
 
     fact.insert(0, "telemetry_key", range(1, len(fact) + 1))
 
@@ -414,7 +450,8 @@ def build_fact_payments(df_payments, dim_installation):
     )
 
 
-def build_fact_sales_network(df_graph, dim_installation, dim_distributor, dim_technician):
+
+def build_fact_sales_network(df_graph, dim_installation, dim_distributor, dim_technician, dim_relation):
     df = df_graph.copy()
     df["target_id_int"] = pd.to_numeric(df["target_id"], errors="coerce")
 
@@ -451,10 +488,10 @@ def build_fact_sales_network(df_graph, dim_installation, dim_distributor, dim_te
             "installation_key",
             "distributor_key",
             "technician_key",
-            "relation",
+            "relation_key",
             "weight",
         ]
-    ].rename(columns={"relation": "relation_type", "weight": "relation_weight"})
+    ].rename(columns={"weight": "relation_weight"})
 
 
 def export_table(df, name):
@@ -477,6 +514,9 @@ def main():
     dim_date = build_dim_date(df_telemetry, df_payments, df_installations)
     dim_contract_plan = build_dim_contract_plan(df_installations, df_payments)
     dim_alert = build_dim_alert(df_telemetry)
+    dim_city = build_dim_city(df_installations)
+    dim_type = build_dim_type(df_installations)
+    dim_client = build_dim_client(df_installations, dim_region, dim_type)
     dim_installation = build_dim_installation(df_installations, dim_region, dim_contract_plan)
     dim_distributor = build_dim_distributor(df_distributors, dim_region)
     dim_technician = build_dim_technician(df_technicians, dim_region)
@@ -505,6 +545,9 @@ def main():
         "dim_contract_plan": dim_contract_plan,
         "dim_date": dim_date,
         "dim_alert": dim_alert,
+        "dim_city": dim_city,
+        "dim_type": dim_type,
+        "dim_client": dim_client,
         "dim_installation": dim_installation,
         "dim_distributor": dim_distributor,
         "dim_technician": dim_technician,
