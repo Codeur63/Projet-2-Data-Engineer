@@ -144,7 +144,8 @@ Exemples :
 
 * Standard
 * Premium
-* Enterprise
+* Basic
+* Custom
 
 ---
 
@@ -157,6 +158,7 @@ Exemples :
 * OVERCURRENT
 * FAULT_02
 * OVR_V
+* AUCUNE
 
 ---
 
@@ -198,21 +200,6 @@ Utilisée pour les analyses financières.
 
 ---
 
-## fact_maintenance
-
-Grain :
-
-Une ligne par intervention de maintenance.
-
-Mesures :
-
-* Durée
-* Coût
-* Nombre de pièces remplacées
-
-Utilisée pour mesurer les performances du service technique.
-
----
 
 ## fact_sales_network
 
@@ -245,7 +232,7 @@ CSV
 
         ▼
 
-ETL / ELT
+ETL 
 
         │
 
