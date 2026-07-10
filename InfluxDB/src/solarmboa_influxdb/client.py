@@ -29,3 +29,18 @@ def close_influx_client():
     if _client is not None:
         _client.close()
         _client = None
+        
+def verifier_connexion():
+    """
+    Verifie la connexion a InfluxDB.
+    Retourne un dictionnaire avec le statut et la version.
+    """
+    try:
+        client = get_influx_client()
+        if client.ping():
+            version = client.version()
+            return {"statut": "connecte", "version": version}
+        else:
+            return {"statut": "non connecte", "version": None}
+    except Exception as e:
+        return {"statut": f"erreur: {str(e)}", "version": None}        
