@@ -61,6 +61,22 @@ def build_dim_contract_plan(df_installations, df_payments):
     
     return dim_contract_plan
 
+def build_dim_contract(df_installations, df_payments):
+    plan_pricing = df_installations[['installation_id', 'tariff_plan']].merge(
+        df_payments[['installation_id', 'amount_xaf', 'payment_date', 'status', 'channel', 'operator_code']],
+        on='installation_id',
+        how='inner' # Uniquement ceux qui ont un payement
+    )
+    
+    dim_contract = plan_pricing.rename(columns={
+        'tariff_plan':'contract',
+        'amount_xaf':'month_price_xaf'
+    })
+    
+    dim_contract.insert(0, "contract_key", range(1, len(dim_contract)+1))
+    
+    return dim_contract
+
 
 def build_dim_region(df_installations, df_distributors, df_technicians):
     regions = pd.concat(
@@ -84,7 +100,6 @@ def build_dim_city(df_installations):
     dim_city = pd.DataFrame({'city':city}) 
     dim_city.insert(0,'city_key', range(1, len(dim_city)+1))
     return dim_city
-
 
 
 
@@ -468,6 +483,13 @@ def build_fact_sales_network(df_graph, dim_installation, dim_distributor, dim_te
         right_on="distributor_id",
         how="left",
     )
+    
+    fact = fact.merge(
+        dim_relation,
+        left_on="relation",
+        right_on='relation',
+        how='left'
+    )
 
     fact = fact.merge(
         dim_technician[["technician_key", "technician_id"]],
@@ -513,9 +535,11 @@ def main():
     dim_region = build_dim_region(df_installations, df_distributors, df_technicians)
     dim_date = build_dim_date(df_telemetry, df_payments, df_installations)
     dim_contract_plan = build_dim_contract_plan(df_installations, df_payments)
+    dim_contract = build_dim_contract(df_installations,df_payments)
     dim_alert = build_dim_alert(df_telemetry)
     dim_city = build_dim_city(df_installations)
     dim_type = build_dim_type(df_installations)
+    dim_relation = build_dim_relation(df_graph)
     dim_client = build_dim_client(df_installations, dim_region, dim_type)
     dim_installation = build_dim_installation(df_installations, dim_region, dim_contract_plan)
     dim_distributor = build_dim_distributor(df_distributors, dim_region)
@@ -538,16 +562,19 @@ def main():
         dim_installation,
         dim_distributor,
         dim_technician,
+        dim_relation
     )
 
     tables = {
         "dim_region": dim_region,
         "dim_contract_plan": dim_contract_plan,
+        "dim_contract": dim_contract, 
         "dim_date": dim_date,
         "dim_alert": dim_alert,
         "dim_city": dim_city,
         "dim_type": dim_type,
         "dim_client": dim_client,
+        "dim_relation": dim_relation,
         "dim_installation": dim_installation,
         "dim_distributor": dim_distributor,
         "dim_technician": dim_technician,
