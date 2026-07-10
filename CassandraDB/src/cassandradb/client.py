@@ -62,6 +62,24 @@ def close_connection():
         _cluster = None
 
 
+def verifier_connection():
+    """
+        Vérifie la connexion à Cassandra.
+        Retourne un dictionnaire avec le statut et les détails.
+    """
+    try:
+        session = get_session()
+        # Exécuter une requête simple pour tester la connexion
+        session.execute("SELECT release_version FROM system.local")
+        return {"statut": "connecte", 
+                "version": session.execute("SELECT release_version FROM system.local").one()[0]
+                }
+    except Exception as e:
+        logger.error(f"Erreur de connexion à Cassandra : {e}")
+        return {"statut": "erreur", "message": str(e)}
+    
+    
+
 if __name__ == '__main__':
     print('=='*40)
     print('\n Test de connection a cassandra\n')
