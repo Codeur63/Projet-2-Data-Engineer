@@ -121,13 +121,13 @@ with tab_alerts:
     st.header("Alertes capteurs")
 
     alert_query = f'''
-from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "sensor_telemetry")
-  |> filter(fn: (r) => exists r.alert_code)
-  |> group(columns: ["alert_code"])
-  |> count()
-'''
+    from(bucket: "{bucket}")
+    |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
+    |> filter(fn: (r) => r._measurement == "sensor_telemetry")
+    |> filter(fn: (r) => exists r.alert_code)
+    |> group(columns: ["alert_code"])
+    |> count()
+    '''
 
     df_alerts = query_to_dataframe(alert_query)
 
@@ -156,13 +156,13 @@ with tab_sensor:
     )
 
     sensor_query = f'''
-from(bucket: "{bucket}")
-  |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
-  |> filter(fn: (r) => r._measurement == "sensor_telemetry")
-  |> filter(fn: (r) => r.sensor_id == "{sensor_id}")
-  |> filter(fn: (r) => r._field == "{sensor_metric}")
-  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-'''
+    from(bucket: "{bucket}")
+    |> range(start: 2025-01-01T00:00:00Z, stop: 2026-07-01T00:00:00Z)
+    |> filter(fn: (r) => r._measurement == "sensor_telemetry")
+    |> filter(fn: (r) => r.sensor_id == "{sensor_id}")
+    |> filter(fn: (r) => r._field == "{sensor_metric}")
+    |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+    '''
 
     df_sensor = query_to_dataframe(sensor_query)
 
