@@ -51,6 +51,7 @@ def get_installation_cached(
             "status": "HIT",
             "source": "redis",
             "latency_ms": round(elapsed_ms, 3),
+            "ttl_seconds": CACHE_TTL,
         }
         return doc
 
