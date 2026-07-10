@@ -112,6 +112,7 @@ with tab_region:
             bucket=bucket_region,
             limit=limit_region,
         )
+               
 
         if rows:
             df = pd.DataFrame(rows)
@@ -130,7 +131,7 @@ with tab_alerts:
 
     alert_code = st.selectbox(
         "Type d’alerte",
-        ["LOW_BATTERY", "OVERCURRENT", "FAULT_02", "OVR_V"],
+        [ "OVERCURRENT", "FAULT_02", "FAULT_01", "TAMPER", "OVR_V", "LOW_BAT", "NO_SIG", "ERR", "AUCUNE"],
     )
     bucket_alert = st.date_input("Jour alerte", value=date.today())
     limit_alert = st.slider("Nombre d’alertes", 10, 500, 100)
