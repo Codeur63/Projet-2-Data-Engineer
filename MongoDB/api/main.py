@@ -55,16 +55,6 @@ async def health_check():
 
 
 # ── Endpoint 1 : Trouver une installation par ID ─────────────
-# @app.get(
-#     "/api/v1/installations/{installation_id}",
-#     summary="Profil complet d'une installation",
-# )
-# async def get_installation(installation_id: int = Path(gt=0)):
-#     col = get_db()["installations"]
-#     doc = col.find_one({"installation_id": installation_id}, {"_id": 0})
-#     if not doc:
-#         raise HTTPException(404, f"Installation {installation_id} introuvable")
-#     return doc
 
 @app.get(
     "/api/v1/installations/{installation_id}",
@@ -80,6 +70,7 @@ async def get_installation(installation_id: int = Path(gt=0)):
 
 
 # ── Endpoint 2 : Liste paginee avec filtres ──────────────────
+# /api/v1/installations/?region=Est&status=active&plan=basic&client_type=individual
 @app.get("/api/v1/installations/", summary="Recherche paginee avec filtres")
 async def list_installations(
     region: Optional[str] = Query(None),
@@ -91,14 +82,14 @@ async def list_installations(
 ):
     col = get_db()["installations"]
     filtre = {}
-    if region:
-        filtre["location.region"] = region
-    if status:
-        filtre["status"] = status
-    if plan:
-        filtre["contract.plan"] = plan
-    if client_type:
-        filtre["client_type"] = client_type
+    # if region:
+    #     filtre["location.region"] = region
+    # if status:
+    #     filtre["status"] = status
+    # if plan:
+    #     filtre["contract.plan"] = plan
+    # if client_type:
+    #     filtre["client_type"] = client_type
     total = col.count_documents(filtre)
     docs = list(
         col.find(
@@ -109,9 +100,9 @@ async def list_installations(
                 "client_type": 1,
                 "status": 1,
                 "location.region": 1,
-                "location.city": 1,
-                "contract.plan": 1,
-                "contract.monthly_xaf": 1,
+                # "location.city": 1,
+                # "contract.plan": 1,
+                # "contract.monthly_xaf": 1,
                 "_id": 0,
             },
         )
@@ -200,25 +191,44 @@ async def update_status(installation_id: int = Path(gt=0), body: dict = None):
         "new_status": new_status,
     }
 
+@app.post(
+    "api/v1/installations/{installation_id}/maintenance",
+    summary="Lister maintenance de l'installation"
+    )
+async def get_maintenance(installation_id: int = Path(get=0)):
+    col = get_db()['installations']
+    filtre = {}
+    docs = list(
+        col.find(
+            filtre,
+            {
+            "installation_id": 1,
+                
+            },            
+        )
+    )
+    return {
+        "data":docs
+    }
 
 # ── Endpoint 5 : Ajouter une intervention ────────────────────
-@app.post(
-    "/api/v1/installations/{installation_id}/maintenance",
-    summary="Enregistrer une intervention de maintenance",
-)
-async def add_maintenance(installation_id: int = Path(gt=0), body: dict = None):
-    if not body or "type" not in body:
-        raise HTTPException(422, "type de visite requis")
-    visit = {"date": datetime.utcnow(), **body}
-    col = get_db()["installations"]
-    result = col.update_one(
-        {"installation_id": installation_id},
-        {
-            "$push": {"maintenance_history": {"$each": [visit], "$slice": -50}},
-            "$set": {"updated_at": datetime.utcnow()},
-        },
-    )
-    invalidate_installation_cache(installation_id)
-    if result.matched_count == 0:
-        raise HTTPException(404, f"Installation {installation_id} introuvable")
-    return {"recorded": True, "installation_id": installation_id}
+# @app.post(
+#     "/api/v1/installations/{installation_id}/maintenance",
+#     summary="Enregistrer une intervention de maintenance",
+# )
+# async def add_maintenance(installation_id: int = Path(gt=0), body: dict = None):
+#     if not body or "type" not in body:
+#         raise HTTPException(422, "type de visite requis")
+#     visit = {"date": datetime.utcnow(), **body}
+#     col = get_db()["installations"]
+#     result = col.update_one(
+#         {"installation_id": installation_id},
+#         {
+#             "$push": {"maintenance_history": {"$each": [visit], "$slice": -50}},
+#             "$set": {"updated_at": datetime.utcnow()},
+#         },
+#     )
+#     invalidate_installation_cache(installation_id)
+#     if result.matched_count == 0:
+#         raise HTTPException(404, f"Installation {installation_id} introuvable")
+#     return {"recorded": True, "installation_id": installation_id}
