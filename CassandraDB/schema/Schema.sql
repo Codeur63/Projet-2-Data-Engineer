@@ -87,13 +87,13 @@ create table sensor_last_reading(
 -- Statistiques journalières par installation
 create table daily_stats (
     installation_id int, 
-    stat_date date,
+    start_date date,
     sensor_id text,
     avg_solar_w float,
+    max_battery_pct float,
     max_solar_w float,
     min_battery_pct float,
-    total_kwh float,
-    uptime_pct float, --- % du temps où le panneau produisait
-    nb_alerts int,
+    timestamp timestamp,
+    total_kwh float
     primary key ((installation_id, stat_date), sensor_id)  
 );
