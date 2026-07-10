@@ -74,6 +74,12 @@ class TelemetryRepository:
                                                        VALUES (?,?,?,?,?,?,?,?,?)                                                    
                                                        ''')      
       
+        self._select_region = self.session.prepare(
+            '''
+            SELECT * FROM sensor_readings_by_region where region=? and bucket=? ORDER BY bucket DESC limit=?
+            '''
+        )
+      
     def compute_status(self, battery_level_pct: float) -> str:
         if battery_level_pct > 50:
             return "OK"
@@ -167,6 +173,7 @@ class TelemetryRepository:
         return sorted(resultats, key=lambda r: r['timestamp'], reverse=True)
 
     
+
     
     def _get_region_for_sensor(self, sensor_id: str) -> str:
         """
