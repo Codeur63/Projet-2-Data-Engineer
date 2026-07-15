@@ -24,8 +24,8 @@ Le projet couvre les besoins suivants :
 
 - stocker les profils d’installations solaires ;
 - ingérer des mesures IoT unitaires ou en batch ;
-- structurer les données dans un Data Lake AWS S3.
-- stocker l’historique de télémétrie ;s ;
+- structurer les données dans un Data Lake AWS S3 ;
+- stocker l’historique de télémétrie ;
 - produire des KPI BI dans un dashboard Streamlit ;
 
 ---
@@ -42,7 +42,7 @@ Bases NoSQL opérationnelles
  ├── MongoDB     : installations, contrats, maintenance
  ├── InfluxDB    : séries temporelles temps réel
  ├── Cassandra   : historique long terme de télémétrie
- └── Neo4j       : réseau distributeurs / techniciens / installations
+ └── Neo4j       : réseau distributeurs / techniciens / installations 
         ↓
 Data Lake AWS S3
  ├── bronze/
@@ -101,6 +101,7 @@ Dashboard Streamlit/ PowerBI
 Le projet utilise plusieurs sources de données :
 
 ```text
+
 data/raw/
 ├── sensors_telemetry.csv
 ├── installations.json
@@ -108,6 +109,7 @@ data/raw/
 ├── network_graph.csv
 ├── network_nodes_distributors.csv
 └── network_nodes_technicians.csv
+
 ```
 
 ### Rôle des fichiers
@@ -183,7 +185,7 @@ NEO4J_USER=neo4j
 NEO4J_PASSWORD=neo4j_password_2026
 
 # AWS
-AWS_DEFAULT_REGION=eu-west-3
+AWS_DEFAULT_REGION=eu-east-2
 S3_BUCKET=solarmboa-prod-data-lake
 ```
 ---
@@ -203,6 +205,7 @@ docker ps
 Les services attendus sont :
 
 ```text
+
 MongoDB
 Redis
 InfluxDB
@@ -253,6 +256,7 @@ http://localhost:8000/health
 ### Uploader les données bronze
 
 ```bash
+
 poetry run python cloud/upload_bronze_to_s3.py
 ```
 
@@ -272,6 +276,7 @@ poetry run python cloud/check_s3_datalake.py
 
 ```bash
 poetry run python cloud/check_s3_layers.py
+
 ```
 
 ---
@@ -281,6 +286,7 @@ poetry run python cloud/check_s3_layers.py
 L’architecture cible prévoit :
 
 ```text
+
 S3 bronze
    ↓
 AWS Glue Job
@@ -292,6 +298,7 @@ AWS Glue Crawler
 Glue Data Catalog
    ↓
 Athena
+
 ```
 
 Les jobs Glue permettent de nettoyer les données bronze et de produire des données silver au format Parquet.
@@ -317,7 +324,7 @@ Certaines bases managées AWS peuvent être limitées selon le type de compte AW
 | ETL | AWS Glue |
 | Monitoring | CloudWatch |
 
----
+---------
 
 
 
@@ -327,7 +334,7 @@ Certaines bases managées AWS peuvent être limitées selon le type de compte AW
 - Le dashboard BI est principalement basé sur le Data Warehouse local.
 - Le Data Lake S3 est opérationnel, mais l’industrialisation Glue/Athena peut être complétée selon les accès AWS.
 
----
+---------
 
 ## 14. Améliorations futures
 
@@ -342,11 +349,12 @@ Certaines bases managées AWS peuvent être limitées selon le type de compte AW
 - Ajouter documentation OpenAPI enrichie.
 - Ajouter qualité des données avec Great Expectations ou dbt tests.
 
----
+---------
 
 ## 15. Commandes principales
 
 ```bash
+
 # Installer les dépendances
 poetry install
 
@@ -368,6 +376,7 @@ poetry run python cloud/upload_gold_to_s3.py
 
 # Vérifier S3
 poetry run python cloud/check_s3_datalake.py
+
 ```
 
 ---
